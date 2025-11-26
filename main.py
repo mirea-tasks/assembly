@@ -28,7 +28,6 @@ INSTRUCTION_SPECS = {
     },
 }
 
-
 @dataclass
 class IRInstruction:
     mnemonic: str  # имя команды: LOAD_CONST / LOAD_MEM / STORE_MEM / ABS
@@ -39,6 +38,26 @@ class IRInstruction:
         if self.B is None:
             return f"A={self.A}"
         return f"A={self.A}, B={self.B}"
+
+    def to_binary(self) -> bytes:
+        value = 0
+
+        value |= (self.A & 0b111111)
+
+        if self.B is not None:
+            value |= (self.B << 6)
+
+        return value.to_bytes(5, byteorder="little")
+
+
+    def to_hex(self) -> str:
+        binary_code = self.to_binary()
+        return ''.join(f'0x{byte:02X} ' for byte in binary_code) + '\n'
+
+
+    def to_bits(self) -> str:
+        binary_code = self.to_binary()
+        return ''.join(f'{byte:08b} ' for byte in binary_code) + '\n'
 
 
 def parse_cli_args() -> argparse.Namespace:
@@ -120,6 +139,12 @@ def save_ir_as_json(ir: List[IRInstruction], path: str) -> None:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 
+def save_binary_output(ir: List[IRInstruction], path: str) -> None:
+    with open(path, "w") as f:
+        for instr in ir:
+            f.write(instr.to_hex())
+
+
 def main() -> None:
     args = parse_cli_args()
     ast = load_source_program(args.source)
@@ -129,6 +154,10 @@ def main() -> None:
         print_ir_for_test(ir)
 
     save_ir_as_json(ir, args.output)
+
+    binary_output_path = args.output.replace(".json", ".bin")
+    save_binary_output(ir, binary_output_path)
+    print(f"Машинный код сохранен в файл: {binary_output_path}")
 
 
 if __name__ == "__main__":
