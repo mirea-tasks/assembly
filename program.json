@@ -1,0 +1,16 @@
+[
+    {
+        "op": "LOAD_CONST",
+        "value": 915
+    },
+    {
+        "op": "LOAD_MEM",
+        "offset": 260
+    },
+    {
+        "op": "STORE_MEM"
+    },
+    {
+        "op": "ABS"
+    }
+]
